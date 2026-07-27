@@ -1,0 +1,15 @@
+# Cargo configuration for the xtensa-esp32s3-none-elf bare-metal target.
+[build]
+target = "xtensa-esp32s3-none-elf"
+rustflags = [
+    "-C", "link-arg=-nostartfiles",
+    # linkall.x is provided by esp-hal and pulls in the chip memory map.
+    "-C", "link-arg=-Wl,-Tlinkall.x",
+]
+
+[target.xtensa-esp32s3-none-elf]
+runner = "espflash flash --monitor"
+
+[unstable]
+# core/alloc are not shipped prebuilt for the Xtensa target.
+build-std = ["core", "alloc"]

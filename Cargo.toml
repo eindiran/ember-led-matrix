@@ -1,0 +1,34 @@
+# Firmware for the Waveshare ESP32-S3-Matrix: lights the onboard 8x8
+# WS2812B LED matrix solid red. Bare-metal (no_std) esp-hal application.
+[package]
+name = "led-matrix"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+
+# No test harness: this is a no_std bare-metal binary, so the default
+# libtest-based targets cannot build for xtensa-esp32s3-none-elf.
+[[bin]]
+name = "led-matrix"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+# RMT (used by the smart-LED adapter) is still behind esp-hal's
+# "unstable" feature gate in the 1.0 line.
+esp-hal = { version = "1.0.0", features = ["esp32s3", "unstable"] }
+esp-hal-smartled = "0.17.0"
+smart-leds = "0.4.0"
+# Provides the esp_app_desc! application descriptor required by the
+# ESP-IDF second-stage bootloader image format that espflash writes.
+esp-bootloader-esp-idf = { version = "0.4", features = ["esp32s3"] }
+
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = false
+incremental = false
+lto = "fat"
+opt-level = "s"
+overflow-checks = false

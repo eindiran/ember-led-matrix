@@ -1,0 +1,4 @@
+# The espup-managed "esp" toolchain provides the Xtensa-enabled rustc
+# needed for the ESP32-S3 (xtensa-esp32s3-none-elf is not in upstream Rust).
+[toolchain]
+channel = "esp"
