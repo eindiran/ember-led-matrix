@@ -1,7 +1,8 @@
-# Firmware for the Waveshare ESP32-S3-Matrix: lights the onboard 8x8
-# WS2812B LED matrix solid red. Bare-metal (no_std) esp-hal application.
+# Firmware for the Waveshare ESP32-S3-Matrix: renders a glowing-ember
+# effect on the onboard 8x8 WS2812B LED matrix. Bare-metal (no_std)
+# esp-hal application.
 [package]
-name = "led-matrix"
+name = "ember-led-matrix"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
@@ -9,7 +10,7 @@ rust-version = "1.88"
 # No test harness: this is a no_std bare-metal binary, so the default
 # libtest-based targets cannot build for xtensa-esp32s3-none-elf.
 [[bin]]
-name = "led-matrix"
+name = "ember-led-matrix"
 path = "src/main.rs"
 test = false
 bench = false

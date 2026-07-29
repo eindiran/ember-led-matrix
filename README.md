@@ -1,7 +1,9 @@
-# led-matrix
+# ember-led-matrix
 
-Bare-metal Rust firmware for the Waveshare ESP32-S3-Matrix that lights the
-onboard 8x8 WS2812B LED matrix solid red.
+Bare-metal Rust firmware for the Waveshare ESP32-S3-Matrix that renders a
+glowing-ember effect on the onboard 8x8 WS2812B LED matrix: every LED
+flickers independently through deep reds and oranges, with occasional
+bright sparks.
 
 ## Hardware
 
@@ -10,9 +12,9 @@ onboard 8x8 WS2812B LED matrix solid red.
 - Connection: native USB (USB Serial/JTAG), enumerates as `/dev/cu.usbmodem*`
   on macOS
 
-Brightness is capped at 32/255 in the firmware (`BRIGHTNESS` in
-`src/main.rs`). Waveshare warns that high matrix brightness heats the board
-quickly and can damage it; raise the value with care.
+Output is capped at 63/255 per channel by the heat-to-color mapping in
+`src/main.rs` (`Ember::color`). Waveshare warns that high matrix brightness
+heats the board quickly and can damage it; raise the caps with care.
 
 ## Prerequisites
 
@@ -34,7 +36,7 @@ The target (`xtensa-esp32s3-none-elf`) and `build-std` settings come from
 
 ```bash
 espflash flash --port /dev/cu.usbmodem11101 \
-    target/xtensa-esp32s3-none-elf/release/led-matrix
+    target/xtensa-esp32s3-none-elf/release/ember-led-matrix
 ```
 
 Or `cargo run --release`, which flashes and attaches a serial monitor.
@@ -47,5 +49,16 @@ Or `cargo run --release`, which flashes and attaches a serial monitor.
 - The LEDs on this board take RGB byte order on the wire, not the usual
   WS2812 GRB (verified empirically: a red frame rendered green with GRB
   encoding), so the adapter is instantiated with the `RGB8` color type.
-- WS2812 pixels latch the last received frame, so the firmware writes one
-  red frame and then parks the CPU in a spin loop.
+- Each LED holds an independent heat value that random-walks between a dim
+  floor and a bright ceiling, with a 1-in-8 chance of sparking near full
+  heat. A second, slower random walk ("glow") scales every LED's heat at
+  once, so the whole bed of coals brightens and cools together on top of
+  the per-LED flicker. Heat maps to color through a quadratic (gamma-like)
+  red curve -- perceived brightness is roughly logarithmic, so this
+  spreads the effect from a barely-visible glow (2/255) up to bright
+  sparks (63/255) -- plus a small cubic green term (peak 3/255) that keeps
+  the palette firmly red with only a faint warm tint at full heat. Frames
+  render at ~30 Hz.
+- Randomness comes from a fixed-seed xorshift32 PRNG: the pattern repeats
+  across boots, which is fine for a decorative effect and avoids a
+  dependency on the RNG peripheral.

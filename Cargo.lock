@@ -404,6 +404,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ember-led-matrix"
+version = "0.1.0"
+dependencies = [
+ "esp-bootloader-esp-idf",
+ "esp-hal",
+ "esp-hal-smartled",
+ "smart-leds",
+]
+
+[[package]]
 name = "enumset"
 version = "1.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -863,16 +873,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "led-matrix"
-version = "0.1.0"
-dependencies = [
- "esp-bootloader-esp-idf",
- "esp-hal",
- "esp-hal-smartled",
- "smart-leds",
 ]
 
 [[package]]
