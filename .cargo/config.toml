@@ -1,15 +1,15 @@
-# Cargo configuration for the xtensa-esp32s3-none-elf bare-metal target.
+# Cargo configuration for the thumbv8m.main-none-eabihf (RP2350 Arm,
+# Cortex-M33) bare-metal target.
 [build]
-target = "xtensa-esp32s3-none-elf"
+target = "thumbv8m.main-none-eabihf"
+
+[target.thumbv8m.main-none-eabihf]
 rustflags = [
-    "-C", "link-arg=-nostartfiles",
-    # linkall.x is provided by esp-hal and pulls in the chip memory map.
-    "-C", "link-arg=-Wl,-Tlinkall.x",
+    # Disable page alignment of sections; keeps the image compact.
+    "-C", "link-arg=--nmagic",
+    # link.x comes from cortex-m-rt and includes our memory.x.
+    "-C", "link-arg=-Tlink.x",
+    "-C", "target-cpu=cortex-m33",
 ]
-
-[target.xtensa-esp32s3-none-elf]
-runner = "espflash flash --monitor"
-
-[unstable]
-# core/alloc are not shipped prebuilt for the Xtensa target.
-build-std = ["core", "alloc"]
+# Loads over USB when the board is in BOOTSEL mode, then reboots it.
+runner = "picotool load -u -v -x -t elf"

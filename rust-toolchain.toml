@@ -1,4 +1,6 @@
-# The espup-managed "esp" toolchain provides the Xtensa-enabled rustc
-# needed for the ESP32-S3 (xtensa-esp32s3-none-elf is not in upstream Rust).
+# The RP2350's Cortex-M33 cores are a first-class upstream Rust target,
+# so plain stable works; rustup fetches the target automatically.
 [toolchain]
-channel = "esp"
+channel = "stable"
+targets = ["thumbv8m.main-none-eabihf"]
+components = ["rustfmt", "clippy"]

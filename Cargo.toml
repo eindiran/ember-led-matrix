@@ -1,6 +1,6 @@
-# Firmware for the Waveshare ESP32-S3-Matrix: renders a glowing-ember
+# Firmware for the Waveshare RP2350-Matrix: renders a glowing-ember
 # effect on the onboard 8x8 WS2812B LED matrix. Bare-metal (no_std)
-# esp-hal application.
+# rp235x-hal application.
 [package]
 name = "ember-led-matrix"
 version = "0.1.0"
@@ -8,7 +8,7 @@ edition = "2024"
 rust-version = "1.88"
 
 # No test harness: this is a no_std bare-metal binary, so the default
-# libtest-based targets cannot build for xtensa-esp32s3-none-elf.
+# libtest-based targets cannot build for thumbv8m.main-none-eabihf.
 [[bin]]
 name = "ember-led-matrix"
 path = "src/main.rs"
@@ -16,14 +16,18 @@ test = false
 bench = false
 
 [dependencies]
-# RMT (used by the smart-LED adapter) is still behind esp-hal's
-# "unstable" feature gate in the 1.0 line.
-esp-hal = { version = "1.0.0", features = ["esp32s3", "unstable"] }
-esp-hal-smartled = "0.17.0"
-smart-leds = "0.4.0"
-# Provides the esp_app_desc! application descriptor required by the
-# ESP-IDF second-stage bootloader image format that espflash writes.
-esp-bootloader-esp-idf = { version = "0.4", features = ["esp32s3"] }
+rp235x-hal = { version = "0.4.0", features = [
+    # Cortex-M runtime and the #[hal::entry] macro.
+    "rt",
+    # critical-section implementation required by Peripherals::take().
+    "critical-section-impl",
+    # Picotool binary-info support (linker sections in memory.x).
+    "binary-info",
+] }
+# PIO instruction assembler used to build the WS2812 program at startup.
+pio = "0.3"
+# DelayNs trait implemented by the HAL timer, used for frame pacing.
+embedded-hal = "1.0"
 
 [profile.release]
 codegen-units = 1
