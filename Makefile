@@ -20,7 +20,7 @@ help:
 	@printf '  help    Show this help\n'
 	@printf '  all     Build everything (release firmware)\n'
 	@printf '  build   Build the release firmware ELF\n'
-	@printf '  flash   Build, then flash over USB (force-reboots a running board)\n'
+	@printf '  flash   Build, then flash over USB (board must be in BOOTSEL mode)\n'
 	@printf '  test    Run the test suite (no-op: no host-runnable tests)\n'
 	@printf '  lint    Static analysis, read-only (fmt --check, clippy)\n'
 	@printf '  format  Apply rustfmt formatting in place\n'
@@ -38,11 +38,12 @@ all: build
 build:
 	cargo build --release
 
-# -f force-reboots a running board into BOOTSEL; for a factory-fresh
-# board, hold BOOT while plugging in and run picotool without -f.
+# This firmware exposes no USB, so a board already running it cannot
+# be rebooted by picotool: enter BOOTSEL manually (hold BOOT while
+# plugging in) before flashing.
 .PHONY: flash
 flash: build
-	picotool load -u -v -x -t elf $(ELF) -f
+	picotool load -u -v -x -t elf $(ELF)
 
 .PHONY: test
 test:
