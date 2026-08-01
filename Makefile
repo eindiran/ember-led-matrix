@@ -5,6 +5,14 @@
 
 ELF := target/thumbv8m.main-none-eabihf/release/ember-led-matrix
 
+# Forward the brightness scale to cargo when given as a make argument,
+# e.g. `make flash DIM_SCALE_FACTOR=3` (1-10; unset = firmware default
+# of 7). Guarded so an unset variable is not exported as an empty
+# string, which would fail the firmware's compile-time validation.
+ifdef DIM_SCALE_FACTOR
+export DIM_SCALE_FACTOR
+endif
+
 # One @printf per line keeps the help doc easy to hand-edit.
 .PHONY: help
 help:
@@ -20,6 +28,9 @@ help:
 	@printf '  audit   Audit dependencies for known vulnerabilities\n'
 	@printf '  check   Non-mutating verification: lint, test, pre-commit\n'
 	@printf '  clean   Remove build artifacts\n'
+	@printf '\n'
+	@printf 'Variables:\n'
+	@printf '  DIM_SCALE_FACTOR=1..10  Brightness for build/flash (default 7)\n'
 
 .PHONY: all
 all: build

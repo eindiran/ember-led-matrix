@@ -11,9 +11,10 @@ and a slow whole-matrix swell.
 - LEDs: 64x WS2812B in an 8x8 grid, chained on a single data line at GP25
 - Connection: native USB; flashing uses the RP2350 Boot ROM (BOOTSEL mode)
 
-Output is capped at 63/255 per channel by the heat-to-color mapping in
-`src/main.rs` (`ember_color`). Waveshare quotes ~900 mA for the matrix at
-full white and recommends thermal limiting; raise the caps with care.
+Output is capped at 63/255 per channel (at the default brightness
+scale) by the heat-to-color mapping in `src/main.rs` (`ember_color`).
+Waveshare quotes ~900 mA for the matrix at full white and recommends
+thermal limiting; raise the brightness scale with care.
 
 ## Prerequisites
 
@@ -30,6 +31,26 @@ cargo build --release
 
 The target and linker configuration come from `.cargo/config.toml`;
 `memory.x` provides the RP2350 memory map and boot block sections.
+`make build` / `make flash` wrap the common commands (see `make help`).
+
+### Brightness scale
+
+Overall brightness is a compile-time setting: set `DIM_SCALE_FACTOR`
+to an integer 1 (dimmest) through 10 (brightest) in the build
+environment. Unset defaults to 7, which reproduces the baseline
+output; invalid values fail the build.
+
+```bash
+make flash DIM_SCALE_FACTOR=3
+```
+
+(Equivalently as an environment variable: `DIM_SCALE_FACTOR=3 cargo
+build --release`.)
+
+Steps are geometric (luminance ratio 1.55 per step) so each step is a
+similar perceived change; scale 10 peaks at red 234/255, just under
+channel saturation. Cargo tracks the variable, so changing it triggers
+a rebuild without touching source.
 
 ## Flash
 

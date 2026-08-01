@@ -14,9 +14,11 @@
 //! demos use); the CPU just feeds one 24-bit color word per LED into the
 //! PIO TX FIFO each frame.
 //!
-//! Output levels are deliberately capped (peak channel value 63/255):
-//! at full brightness the matrix draws around 900 mA and Waveshare
-//! recommends thermal limiting.
+//! Output levels are deliberately capped (peak channel value 63/255 at
+//! the default brightness scale): at full brightness the matrix draws
+//! around 900 mA and Waveshare recommends thermal limiting. Overall
+//! brightness is selectable at compile time via the DIM_SCALE_FACTOR
+//! environment variable (1-10, default 7; see `DIM_SCALE_FACTOR`).
 
 #![no_std]
 #![no_main]
@@ -149,22 +151,55 @@ impl Flicker {
     }
 }
 
+/// Overall brightness scale, 1 (dimmest) to 10 (brightest), set at
+/// compile time via the DIM_SCALE_FACTOR environment variable, e.g.
+/// `DIM_SCALE_FACTOR=3 cargo build --release`. Unset defaults to 7,
+/// which reproduces the baseline output exactly. Invalid values fail
+/// the build.
+const DIM_SCALE_FACTOR: usize = parse_dim_scale(option_env!("DIM_SCALE_FACTOR"));
+
+/// Fixed-point (x256) luminance multipliers for scales 1..=10:
+/// round(1.55^(s - 7) * 256). Steps are geometric because perceived
+/// brightness tracks luminance ratios, not increments (Weber-Fechner),
+/// so each step feels like a similar change. The ratio is chosen so
+/// scale 10 peaks at red 63 x 1.55^3 = 234, just under saturation.
+const DIM_MULT_256: [u32; 10] = [18, 29, 44, 69, 107, 165, 256, 397, 615, 953];
+
+/// Parse DIM_SCALE_FACTOR at compile time; a bad value aborts the
+/// build with this panic message.
+const fn parse_dim_scale(v: Option<&str>) -> usize {
+    match v {
+        None => 7,
+        Some(s) => match s.as_bytes() {
+            [d @ b'1'..=b'9'] => (*d - b'0') as usize,
+            [b'1', b'0'] => 10,
+            _ => panic!("DIM_SCALE_FACTOR must be an integer in 1..=10"),
+        },
+    }
+}
+
 /// Map an LED's heat, scaled by the global glow factor, to a PIO FIFO
 /// word. Perceived brightness is roughly logarithmic, so red follows a
-/// quadratic (gamma-like) curve: full glow spans red 2..63, putting cool
-/// coals at a barely-visible glow while sparks stay bright (63/255 cap
-/// for thermal safety). Green rises cubically to at most 3/255 so hot
-/// sparks get only a faint warm tint; blue stays off. Because glow
-/// scales heat *before* the curve, a global dip dims the whole bed
-/// super-linearly, which reads as the entire ember cooling at once.
+/// quadratic (gamma-like) curve: at the default scale, full glow spans
+/// red 2..63, putting cool coals at a barely-visible glow while sparks
+/// stay bright (63/255 cap for thermal safety). Green rises cubically
+/// to at most 3/255 so hot sparks get only a faint warm tint; blue
+/// stays off. Because glow scales heat *before* the curve, a global
+/// dip dims the whole bed super-linearly, which reads as the entire
+/// ember cooling at once. Both channels are then scaled by the
+/// DIM_SCALE_FACTOR luminance multiplier, preserving the red:green
+/// ratio (hue) at every brightness.
 ///
 /// The matrix LEDs take red as the first byte on the wire (verified from
 /// Waveshare's own demo, which packs R<<24 | G<<16 | B<<8); the PIO
 /// program shifts the word out MSB-first with a 24-bit autopull.
 fn ember_color(heat: u8, glow: u8) -> u32 {
     let h = (u32::from(heat) * u32::from(glow)) >> 8;
-    let red = (h * h) >> 10;
-    let green = (h * h * h) >> 22;
+    let m = DIM_MULT_256[DIM_SCALE_FACTOR - 1];
+    // Clamps are belt-and-braces: the multiplier table is sized so
+    // even scale 10 stays below 255.
+    let red = ((((h * h) >> 10) * m) >> 8).min(255);
+    let green = ((((h * h * h) >> 22) * m) >> 8).min(255);
     (red << 24) | (green << 16)
 }
 
