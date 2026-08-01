@@ -30,6 +30,11 @@ Flash with
 make flash
 ```
 
+### BOOTSEL mode
+
+To reflash the device, put it into BOOTSEL mode by holding the BOOT button down and then plugging in the USB-C cable.
+It will NOT trigger the fw/LED animation, so if the device is in BOOTSEL mode, you won't see the LEDs running.
+
 ### Brightness scale
 
 Overall brightness is a compile-time setting: set `DIM_SCALE_FACTOR` to an integer 1 (dimmest) through 10 (brightest) in the build environment.
