@@ -76,12 +76,12 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
     }
 }
 
-/// Xorshift32 pseudo-random number generator (Marsaglia). Deterministic
-/// but plenty for decorrelating LED flicker; state must be non-zero.
+/// Xorshift32 prng: deterministic but plenty for decorrelating LED flicker.
+/// State must be non-zero.
 struct XorShift32(u32);
 
 impl XorShift32 {
-    /// Advance the state and return the next raw 32-bit value.
+    /// Advance the state and return the next raw u32.
     fn next(&mut self) -> u32 {
         let mut x = self.0;
         x ^= x << 13;
@@ -91,7 +91,7 @@ impl XorShift32 {
         x
     }
 
-    /// Uniform-ish value in `lo..=hi` (modulo bias is irrelevant here).
+    /// Uniform-ish value in `lo..=hi`
     fn range(&mut self, lo: u8, hi: u8) -> u8 {
         lo + (self.next() % (u32::from(hi - lo) + 1)) as u8
     }
