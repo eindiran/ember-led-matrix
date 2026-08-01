@@ -18,12 +18,17 @@ Waveshare quotes ~900 mA for the matrix at full white and recommends thermal lim
 
 ## Build
 
+Run `make help` or bare `make` to see all commands.
+
+Build with
 ```bash
-cargo build --release
+make build
 ```
 
-The target and linker configuration come from `.cargo/config.toml`; `memory.x` provides the RP2350 memory map and boot block sections.
-`make build` / `make flash` wrap the common commands (see `make help`).
+Flash with
+```bash
+make flash
+```
 
 ### Brightness scale
 
