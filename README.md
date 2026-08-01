@@ -30,6 +30,14 @@ Flash with
 make flash
 ```
 
+To specify a different birghtness/dimmness, use eg:
+
+```bash
+make flash DIM_SCALE_FACTOR=3
+```
+
+For more info, see the "Brightness scale" section below.
+
 ### BOOTSEL mode
 
 To reflash the device, put it into BOOTSEL mode by holding the BOOT button down and then plugging in the USB-C cable.
