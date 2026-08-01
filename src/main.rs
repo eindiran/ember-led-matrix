@@ -10,7 +10,7 @@
 //!
 //! The 64 LEDs are chained on a single data line (GP25). The RP2350 has
 //! no dedicated LED peripheral, so a small PIO program generates the
-//! WS2812 bit timing (the same 10-cycles-per-bit program Waveshare's own
+//! WS2812 bit timing (stolen from the 10-cycles-per-bit program Waveshare's own
 //! demos use); the CPU just feeds one 24-bit color word per LED into the
 //! PIO TX FIFO each frame.
 //!
@@ -189,10 +189,6 @@ const fn parse_dim_scale(v: Option<&str>) -> usize {
 /// ember cooling at once. Both channels are then scaled by the
 /// DIM_SCALE_FACTOR luminance multiplier, preserving the red:green
 /// ratio (hue) at every brightness.
-///
-/// The matrix LEDs take red as the first byte on the wire (verified from
-/// Waveshare's own demo, which packs R<<24 | G<<16 | B<<8); the PIO
-/// program shifts the word out MSB-first with a 24-bit autopull.
 fn ember_color(heat: u8, glow: u8) -> u32 {
     let h = (u32::from(heat) * u32::from(glow)) >> 8;
     let m = DIM_MULT_256[DIM_SCALE_FACTOR - 1];
