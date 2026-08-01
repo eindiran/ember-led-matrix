@@ -13,6 +13,10 @@ repos:
     rev: v1.38.0
     hooks:
       - id: yamllint
+  - repo: https://github.com/checkmake/checkmake.git
+    rev: v0.3.2
+    hooks:
+      - id: checkmake
   - repo: local
     hooks:
       - id: cargo-fmt
