@@ -13,3 +13,11 @@ rustflags = [
 ]
 # Loads over USB when the board is in BOOTSEL mode, then reboots it.
 runner = "picotool load -u -v -x -t elf"
+
+# Silence the end-of-build future-incompatibility notice (currently
+# triggered by proc-macro-error2 via pio-proc, build-time-only code
+# with no effect on the firmware). The data is still recorded: run
+# `cargo report future-incompatibilities` to review it, and check
+# again when bumping pio/rp235x-hal versions.
+[future-incompat-report]
+frequency = "never"
