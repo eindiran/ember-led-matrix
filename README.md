@@ -8,9 +8,8 @@ Rust firmware for the Waveshare RP2350-Matrix that renders a glowing-ember effec
 - LEDs: 64x WS2812B in an 8x8 grid, chained on a single data line at GP25
 - Connection: native USB; flashing uses the RP2350 Boot ROM (BOOTSEL mode)
 
-Output is capped at 63/255 per channel (at the default brightness scale) by the heat-to-color mapping in `src/main.rs` (`ember_color`).
-Waveshare quotes ~900 mA for the matrix at full white and recommends thermal limiting. Avoid raising
-brightness above 7 if the intent is to keep the board running for an extended period.
+On default brightness, equivalent to `DIM_SCALE_FACTOR=7`, output is capped at 63/255 (for each LED) by the heat-to-color mapping in `src/main.rs` (`ember_color`).
+Waveshare quotes ~900 mA for the matrix at full white and recommends thermal limiting. Avoid raising brightness above 7 if the intent is to keep the board running for an extended period.
 
 ## Prerequisites
 
@@ -19,12 +18,30 @@ brightness above 7 if the intent is to keep the board running for an extended pe
 
 ## Build
 
+Run `make help` or bare `make` to see all commands.
+
+Build with
 ```bash
-cargo build --release
+make build
 ```
 
-The target and linker configuration come from `.cargo/config.toml`; `memory.x` provides the RP2350 memory map and boot block sections.
-`make build` / `make flash` wrap the common commands (see `make help`).
+Flash with
+```bash
+make flash
+```
+
+To specify a different birghtness/dimmness, use eg:
+
+```bash
+make flash DIM_SCALE_FACTOR=3
+```
+
+For more info, see the "Brightness scale" section below.
+
+### BOOTSEL mode
+
+To reflash the device, put it into BOOTSEL mode by holding the BOOT button down and then plugging in the USB-C cable.
+It will NOT trigger the fw/LED animation, so if the device is in BOOTSEL mode, you won't see the LEDs running.
 
 ### Brightness scale
 
@@ -45,5 +62,5 @@ export DIM_SCALE_FACTOR=10
 cargo build --release
 ```
 
-Steps are geometric (luminance ratio 1.55 per step) so each step is a similar perceived change; scale 10 peaks at red 234/255, just under saturation.
+Steps are geometric (luminance ratio 1.55 per step) so each step is a similar perceived change; scale 10 peaks at red 234/255.
 Cargo tracks the variable, so changing it triggers a rebuild without touching source.
